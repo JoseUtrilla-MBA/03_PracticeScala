@@ -38,44 +38,49 @@ object ParallelParenthesesBalancing extends ParallelParenthesesBalancingInterfac
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def balance(chars: Array[Char]): Boolean =
-    @tailrec
-    def insideMethodBalance(chars: Array[Char], isCorrectBalance: Boolean, n: Int): Boolean =
-      if chars.isEmpty then isCorrectBalance
-      else
-        chars.head match
-          case '(' => insideMethodBalance(chars.tail, false, n + 1)
-          case ')' => isCorrectBalance match
-            case true => false
-            case false => n match
-              case x if x == 1 => insideMethodBalance(chars.tail, true, n - 1)
-              case x if x > 1 => insideMethodBalance(chars.tail, false, n - 1)
-          case _ => insideMethodBalance(chars.tail, isCorrectBalance, n)
+    val until = chars.length
+    var idx = 0
+    var nStart = 0
+    var nEnd = 0
+    while idx < until do
+      chars(idx) match
+        case '(' => nStart += 1
+        case ')' => nEnd += 1
+        case _ => ()
+      if nEnd > nStart then
+        nStart = 0
+        nEnd = 1
+        idx = until
+      idx += 1
 
-    if (chars.isEmpty) true
-    else
-      insideMethodBalance(chars, true, 0)
+    nStart - nEnd == 0
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean =
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int): List[Int] /*: ???*/ = {
-      var startParenthese = arg1
-      var endParenthese = arg2
-      val out = List[Int]()
-      while idx < until do
-        chars(idx) match {
-          case '(' => out +: 1
-          case ')' => out +: -1
-        }
-      out
-    }
+    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int): (Int,Int) /*: ???*/ =
+      var index = idx
+      var breaks =0
+      var end =0
+      while index < until do
+        chars(index) match
+          case '(' => end += 1
+          case ')' => end -= 1
+          case _   => ()
+        breaks = breaks.max(end)
+        index += 1
+      (breaks,end)
 
-    def reduce(from: Int, until: Int): Int /*: ???*/ = {
-      ???
-    }
+    def reduce(from: Int, until: Int): (Int, Int) /*: ???*/ =
+      if until - from < threshold then
+        traverse(from, until, 0, 0)
+      else
+        val mid = from + (until - from) / 2
+        val (a1, a2) = parallel(reduce(from, mid), reduce(mid, until))
+        ((a1._1 + a1._2) + a2._1, (a1._1 + a1._2) + a2._2)
 
-    reduce(0, chars.length) == 0
+    reduce(0, chars.length) == (0, 0)
 
 // For those who want more:
 // Prove that your reduction operator is associative!

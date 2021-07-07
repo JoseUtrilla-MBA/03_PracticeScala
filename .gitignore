@@ -11,5 +11,8 @@ logs/
 .idea
 .metals
 .vscode
+.scalafmt.conf
+project/metals.sbt
+project/project/
 *.csv
 *.dat
