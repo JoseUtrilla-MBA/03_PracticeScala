@@ -16,3 +16,4 @@ project/metals.sbt
 project/project/
 *.csv
 *.dat
+.bsp
